@@ -46,6 +46,12 @@ def generate_launch_description():
         # --- трекинг маркера: RANSAC + гомография (ЛР_04, ЛР_03) ---
         Node(package='apotheosis_stand', executable='marker_tracker',
              name='marker_tracker', condition=full),
+        # --- визуализатор руки: MarkerArray на /stand/arm_markers ---
+        Node(package='apotheosis_stand', executable='arm_viz',
+             name='arm_viz'),
+        # --- URDF на /robot_description потоком (для Trillium через rosbridge)---
+        Node(package='apotheosis_stand', executable='urdf_pub',
+             name='urdf_republisher'),
         # --- IK-сервер: /goal_pose -> /joint_states (ЛР_06) ---
         Node(package='apotheosis_stand', executable='ik_server',
              name='ik_server', condition=full),

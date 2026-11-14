@@ -26,6 +26,8 @@ setup(
             'marker_tracker = apotheosis_stand.marker_tracker:main',
             'ik_server = apotheosis_stand.ik_server:main',
             'bridge_server = apotheosis_stand.bridge_server:main',
+            'arm_viz = apotheosis_stand.arm_viz:main',
+            'urdf_pub = apotheosis_stand.urdf_pub:main',
         ],
     },
 )

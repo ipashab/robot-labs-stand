@@ -34,6 +34,11 @@ class IKServer(Node):
         self.res_pub = self.create_publisher(Float64, '/stand/ik_residual', 10)
         self.sub = self.create_subscription(PoseStamped, '/goal_pose',
                                             self.on_goal, 10)
+        # Trillium/Foxglove публикуют_pose по умолчанию в /move_base_simple/goal
+        # - принимаем и его, чтобы менять топик в настройках не приходилось
+        self.sub2 = self.create_subscription(PoseStamped,
+                                             '/move_base_simple/goal',
+                                             self.on_goal, 10)
         seed = [float(v) for v in self.get_parameter('seed_q').value]
         self.q = np.array(seed, float)
         # robot_state_publisher (Jazzy) публикует TF руки только на каждое
