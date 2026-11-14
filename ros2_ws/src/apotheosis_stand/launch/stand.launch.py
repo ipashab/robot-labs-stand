@@ -57,7 +57,10 @@ def generate_launch_description():
              name='marker_static_tf',
              arguments=['0.4', '0.4', '0.0', '0', '0', '0',
                         'world', 'marker']),
-        # --- rosbridge: Foxglove подключается на ws://localhost:9090 ---
+        # --- rosbridge: Trillium/Foxglove подключаются на ws://localhost:9090 ---
+        # rosapi обязателен: Trillium (веб-форк Foxglove v1.87) берёт список
+        # топиков сервисом /rosapi/topics_and_raw_types
         Node(package='rosbridge_server', executable='rosbridge_websocket',
              name='rosbridge'),
+        Node(package='rosapi', executable='rosapi_node', name='rosapi'),
     ])
