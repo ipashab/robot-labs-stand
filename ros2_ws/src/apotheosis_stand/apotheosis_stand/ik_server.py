@@ -29,13 +29,22 @@ class IKServer(Node):
     def __init__(self):
         super().__init__('ik_server')
         self.declare_parameter('seed_q', [0.5, -0.5, 0.9, 0.6])
+        self.declare_parameter('republish_rate', 20.0)
         self.js_pub = self.create_publisher(JointState, '/joint_states', 10)
         self.res_pub = self.create_publisher(Float64, '/stand/ik_residual', 10)
         self.sub = self.create_subscription(PoseStamped, '/goal_pose',
                                             self.on_goal, 10)
         seed = [float(v) for v in self.get_parameter('seed_q').value]
         self.q = np.array(seed, float)
-        self.publish_joint_state(self.q)
+        # robot_state_publisher (Jazzy) публикует TF руки только на каждое
+        # /joint_states - поэтому повторяем последнюю позу потоком: рука
+        # постоянно видна в Foxglove/Trillium и после каждого решения тоже
+        rate = float(self.get_parameter('republish_rate').value)
+        if rate > 0:
+            self.timer = self.create_timer(1.0 / rate,
+                                            lambda: self.publish_joint_state(self.q))
+        else:
+            self.publish_joint_state(self.q)
         self.get_logger().info(
             'IK-сервер: цель - /goal_pose (PoseStamped), суставы - /joint_states')
 

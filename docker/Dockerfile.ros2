@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ros-jazzy-rqt-tf-tree \
         ros-jazzy-rviz2 \
         ros-jazzy-rosbridge-suite \
+        ros-jazzy-rosapi \
         python3-colcon-common-extensions \
         python3-numpy \
     && rm -rf /var/lib/apt/lists/*
