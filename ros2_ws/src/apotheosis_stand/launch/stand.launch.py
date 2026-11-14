@@ -12,7 +12,9 @@ IK-сервер + мост из ноутбука + rosbridge (для Foxglove).
 - rosbridge (порт 9090)             - подключение Foxglove в браузере
 """
 from launch import LaunchDescription
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
@@ -23,8 +25,15 @@ def generate_launch_description():
                                  'urdf', 'stand_arm.urdf'])
     robot_desc = ParameterValue(Command([FindExecutable(name='cat'), ' ', urdf]),
                                 value_type=str)
+    # mode:=stand  - полный стенд (трекер + IK-сервер + мост);
+    # mode:=bridge - лёгкий вариант под панель ноутбука: рука слушается
+    #                только мост (суставы из TCP -> /joint_states)
+    full = IfCondition(LaunchConfiguration('full'))
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'full', default_value='true',
+            description='true: полный стенд (трекер + IK); false: мост'),
         # --- рука: кадры из URDF (ЛР_01 + ЛР_05) ---
         # суставы публикует ik_server (стартовая поза + каждый решение),
         # а в режиме моста - наоборот, панель ноутбука. Никакого
@@ -36,10 +45,10 @@ def generate_launch_description():
              name='camera_flight', parameters=[{'anim': True}]),
         # --- трекинг маркера: RANSAC + гомография (ЛР_04, ЛР_03) ---
         Node(package='apotheosis_stand', executable='marker_tracker',
-             name='marker_tracker'),
+             name='marker_tracker', condition=full),
         # --- IK-сервер: /goal_pose -> /joint_states (ЛР_06) ---
         Node(package='apotheosis_stand', executable='ik_server',
-             name='ik_server'),
+             name='ik_server', condition=full),
         # --- мост из ноутбука (вариант 2) ---
         Node(package='apotheosis_stand', executable='bridge_server',
              name='nb_bridge'),

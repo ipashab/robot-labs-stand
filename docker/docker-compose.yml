@@ -1,27 +1,39 @@
 name: robot-labs-stand
 
+# Одновременный запуск: варианты разделяют одну docker-сеть проекта,
+# поэтому ROS_DOMAIN_ID у них разный - узлы не видят друг друга и
+# не конфликтуют за /tf и /joint_states. Порт rosbridge/моста задаётся
+# переменными (вдруг порты заняты):
+#   ROSBRIDGE_PORT=9090 BRIDGE_PORT=8977 docker compose up -d stand
+
 services:
   # ====== ВАРИАНТ 1: полный живой стенд ======
-  # рука + перелёт камеры (slerp) + трекинг маркера (RANSAC) + IK-сервер
-  # + мост из ноутбука. Foxglove Studio: ws://localhost:9090
+  # рука (URDF) + перелёт камеры (slerp) + трекинг маркера (RANSAC)
+  # + IK-сервер + мост из ноутбука + rosbridge.
+  # Foxglove: ws://localhost:${ROSBRIDGE_PORT:-9090}
+  # Мост ноутбука: localhost:${BRIDGE_PORT:-8977} (ноутбук пишет сюда)
   stand:
     build:
       context: ..
       dockerfile: docker/Dockerfile.ros2
+    environment:
+      - ROS_DOMAIN_ID=53
     ports:
-      - "9090:9090"   # rosbridge (Foxglove)
-      - "8977:8977"   # мост из ноутбука (вариант 2)
+      - "${ROSBRIDGE_PORT:-9090}:9090"
+      - "${BRIDGE_PORT:-8977}:8977"
 
   # ====== ВАРИАНТ 2: мост под панель ноутбука ======
-  # углы руки задаёт панель ноутбука (TCP 8977), камера летает сама,
-  # Foxglove всё равно доступен. Запускать один из двух сервисов:
-  #   docker compose up -d stand     # стенд с IK-сервером
-  #   docker compose up -d bridge   # мост под панель ноутбука
+  # Тот же образ, но без marker_tracker/ik_server: суставы руки
+  # задаёт панель ноутбука (мост), камера летает сама, Foxglove доступен.
+  # Вариант можно запускать одновременно со стендом - домены разные
+  # и порты другие; или отдельно, когда полный стенд не нужен.
   bridge:
     build:
       context: ..
       dockerfile: docker/Dockerfile.ros2
+    environment:
+      - ROS_DOMAIN_ID=54
     ports:
-      - "9090:9090"
-      - "8977:8977"
+      - "${ROSBRIDGE_PORT_ALT:-9190}:9090"
+      - "${BRIDGE_PORT_ALT:-8177}:8977"
     entrypoint: ["/stand/run_bridge.sh"]

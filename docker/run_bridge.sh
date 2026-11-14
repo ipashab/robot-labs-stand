@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
-# Вариант «мост»: рука слушается панель ноутбука (TCP 8977),
-# плюс rosbridge, чтобы Foxglove показывал ту же сцену.
+# Вариант «мост»: рука слушается панель ноутбука (TCP 8977), камера
+# летает сама, rosbridge открыт для Foxglove. Трекер маркера и IK-сервер
+# не запускаются (full:=false) - суставы задаёт только панель.
+# URDF передаётся через launch (ParameterValue): через CLI -p Jazzy
+# не парсит многострочный XML как YAML.
 # shellcheck disable=SC1091
 source /opt/ros/jazzy/setup.sh
 source /stand/ros2_ws/install/setup.bash
-
-# кадры руки из URDF; суставы придут от ноутбука (bridge_server)
-ros2 run robot_state_publisher robot_state_publisher --ros-args \
-  -p robot_description="$(cat /stand/ros2_ws/src/apotheosis_stand/urdf/stand_arm.urdf)" &
-ros2 run apotheosis_stand camera_flight --ros-args -p anim:=true &
-ros2 run rosbridge_server rosbridge_websocket --ros-args -p port:=9090 &
-
-# мост -前台: слушает TCP 8977 и переводит в топики
-ros2 run apotheosis_stand bridge_server
+exec ros2 launch apotheosis_stand stand.launch.py full:=false
