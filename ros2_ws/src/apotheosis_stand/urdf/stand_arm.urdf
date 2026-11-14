@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!-- Рука стенда: yaw + 3 pitch, 4 шарнира, избыточность 1 DOF.
+     Геометрия совпадает с arm_fk ноутбука «Апофеоз» до машинной точности:
+     joint_2 с rpy="0 -pi/2 0" даёт композицию Ry(q2 - pi/2), как там.
+     Звенья: 0.45 + 0.35 + 0.15 = вылет 0.95 м над базой высотой 0.30 м. -->
+<robot name="stand_arm">
+  <material name="steel">
+    <color rgba="0.25 0.28 0.33 1"/>
+  </material>
+  <material name="accent">
+    <color rgba="0.88 0.54 0.18 1"/>
+  </material>
+
+  <link name="world_link"/>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.10" length="0.10"/>
+      </geometry>
+      <material name="steel"/>
+    </visual>
+  </link>
+  <joint name="base_fixture" type="fixed">
+    <parent link="world_link"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="pillar_link">
+    <visual>
+      <origin xyz="0 0 0.15" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.035" length="0.30"/>
+      </geometry>
+      <material name="steel"/>
+    </visual>
+  </link>
+  <joint name="pillar_fixture" type="fixed">
+    <parent link="base_link"/>
+    <child link="pillar_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ======== шарнир 1: поворот колонны (yaw) ======== -->
+  <link name="shoulder_link">
+    <visual>
+      <origin xyz="0.08 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.045"/>
+      </geometry>
+      <material name="accent"/>
+    </visual>
+  </link>
+  <joint name="joint_1" type="revolute">
+    <parent link="pillar_link"/>
+    <child link="shoulder_link"/>
+    <origin xyz="0 0 0.30" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159265" upper="3.14159265" effort="10" velocity="10"/>
+  </joint>
+
+  <!-- ======== шарнир 2: плечо (pitch) ========
+       rpy = -pi/2 вокруг y: q2 = 0 => рука вниз (как в arm_fk) -->
+  <link name="upperarm_link">
+    <visual>
+      <origin xyz="0.225 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.028" length="0.45"/>
+      </geometry>
+      <material name="steel"/>
+    </visual>
+  </link>
+  <joint name="joint_2" type="revolute">
+    <parent link="shoulder_link"/>
+    <child link="upperarm_link"/>
+    <origin xyz="0 0 0" rpy="0 -1.57079632679 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.14159265" upper="3.14159265" effort="10" velocity="10"/>
+  </joint>
+
+  <!-- ======== шарнир 3: локоть (pitch) ======== -->
+  <link name="forearm_link">
+    <visual>
+      <origin xyz="0.175 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.024" length="0.35"/>
+      </geometry>
+      <material name="steel"/>
+    </visual>
+  </link>
+  <joint name="joint_3" type="revolute">
+    <parent link="upperarm_link"/>
+    <child link="forearm_link"/>
+    <origin xyz="0.45 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.14159265" upper="3.14159265" effort="10" velocity="10"/>
+  </joint>
+
+  <!-- ======== шарнир 4: запястье (pitch) ======== -->
+  <link name="wrist_link">
+    <visual>
+      <origin xyz="0.075 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.018" length="0.15"/>
+      </geometry>
+      <material name="steel"/>
+    </visual>
+  </link>
+  <joint name="joint_4" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_link"/>
+    <origin xyz="0.35 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.14159265" upper="3.14159265" effort="10" velocity="10"/>
+  </joint>
+
+  <!-- схват (кончик того же звена) -->
+  <link name="ee_link"/>
+  <joint name="ee_fixture" type="fixed">
+    <parent link="wrist_link"/>
+    <child link="ee_link"/>
+    <origin xyz="0.15 0 0" rpy="0 0 0"/>
+  </joint>
+</robot>

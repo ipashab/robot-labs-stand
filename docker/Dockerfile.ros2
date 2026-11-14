@@ -1,0 +1,34 @@
+# Контейнер ROS 2 Jazzy учебного стенда (tf2, RANSAC, гомография, IK).
+# Базовый образ официальный и мультиархитектурный: на Apple Silicon
+# работает нативно (arm64), без эмуляции.
+FROM ros:jazzy-ros-base
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# системные пакеты стенда + colcon для сборки рабочего пространства
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ros-jazzy-robot-state-publisher \
+        ros-jazzy-joint-state-publisher \
+        ros-jazzy-tf2-ros \
+        ros-jazzy-tf2-tools \
+        ros-jazzy-xacro \
+        ros-jazzy-ros2topic \
+        ros-jazzy-rqt-tf-tree \
+        ros-jazzy-rviz2 \
+        ros-jazzy-rosbridge-suite \
+        python3-colcon-common-extensions \
+        python3-numpy \
+    && rm -rf /var/lib/apt/lists/*
+
+# сборка пакета стенда прямо в образ
+WORKDIR /stand/ros2_ws
+COPY ros2_ws /stand/ros2_ws
+COPY docker/run_stand.sh docker/run_bridge.sh /stand/
+RUN chmod +x /stand/run_stand.sh /stand/run_bridge.sh \
+    && . /opt/ros/jazzy/setup.sh \
+    && colcon build --packages-select apotheosis_stand \
+        --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+# точка входа по умолчанию - полный стенд; для моста:
+#   command: ["/stand/run_bridge.sh"]
+ENTRYPOINT ["/stand/run_stand.sh"]
