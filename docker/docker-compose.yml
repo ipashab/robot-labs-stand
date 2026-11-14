@@ -37,3 +37,20 @@ services:
       - "${ROSBRIDGE_PORT_ALT:-9190}:9090"
       - "${BRIDGE_PORT_ALT:-8177}:8977"
     entrypoint: ["/stand/run_bridge.sh"]
+
+  # ====== ПРОСМОТРЩИК В БРАУЗЕРЕ (замена Foxglove) ======
+  # Trillium - опенсорсный веб-форк Foxglove v1.87 (для сред, где
+  # Foxglove недоступен). Открывается в любом браузере:
+  #   http://localhost:8080
+  # Подключение внутри приложения: "Rosbridge connection" ->
+  #   ws://localhost:9090  (вариант 1, стенд)
+  #   ws://localhost:9190  (вариант 2, мост)
+  # Панель 3D: TF-кадры, /robot_description, /stand/camera_frame;
+  # инструмент "Publish pose" в 3D-панели публикует /goal_pose.
+  # Образ собран под amd64: на Apple Silicon стартует через Rosetta
+  # (внутри - статика на Caddy, оверхед эмуляции не заметен).
+  viewer:
+    image: cloudv0/trillium:latest
+    platform: linux/amd64
+    ports:
+      - "${VIEWER_PORT:-8080}:8080"

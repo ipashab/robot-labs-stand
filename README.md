@@ -30,15 +30,26 @@ docker compose -f docker/docker-compose.yml up -d --build stand
 Поднимаются узлы (см. таблицу ниже): кадры руки из URDF, перелёт камеры
 по slerp, трекинг маркера (RANSAC), IK-сервер, мост и rosbridge.
 
-**Посмотреть сцену**: [Foxglove Studio](https://foxglove.dev) →
-«Open connection» → **Foxglove WebSocket** → `ws://localhost:9090`.
+**Посмотреть сцену** (выберите один из вариантов):
+
+- **Trillium** — опенсорсный веб-форк Foxglove, работает полностью
+  локально в браузере, без внешних сервисов:
+  ```bash
+  docker compose -f docker/docker-compose.yml up -d viewer
+  ```
+  → откройте **http://localhost:8080** → «Open connection» →
+  **Rosbridge** → `ws://localhost:9090` (стенд) или `ws://localhost:9190` (мост).
+  Работает везде, где недоступен Foxglove (например, в РФ).
+- **Foxglove Studio** — если у вас он есть: подключение
+  **Foxglove WebSocket** → `ws://localhost:9090`.
+
 На 3D-панели включите TF-кадры `/tf` и модель робота
 (`/robot_description`); кадр `camera_frame` (топик `/stand/camera_frame`)
 покажет синтетический кадр с наблюдениями и инлаерами RANSAC.
 
-**Подвигать руку**: в Foxglove — «Publish point/pose» на 3D-панели
-публикует `/goal_pose`; IK-сервер решает цель тем же ньютоновским
-солвером, что и ноутбук (ЛР_06), и рука перестраивается.
+**Подвигать руку**: в Trillium/Foxglove — инструмент «Publish point/pose»
+на 3D-панели публикует `/goal_pose`; IK-сервер решает цель тем же
+ньютоновским солвером, что и ноутбук (ЛР_06), и рука перестраивается.
 
 ### Вариант Б · мост: панель ноутбука крутит ROS-руку
 
@@ -49,9 +60,9 @@ docker compose -f docker/docker-compose.yml up -d --build bridge
 Откройте `notebooks/Апофеоз_ЛР01-06.ipynb` (Voilà или Jupyter) —
 в конце появилась секция «Мост в ROS-стенд»: отметьте галочку —
 и каждый ползунок панели `q1..q4`, цель `x/y/z` и перелёт камеры
-уезжают в ROS (`/joint_states`, `/goal_pose`, `/stand/cam_t`), а Foxglove
-показывает ту же руку. Без стенда ноутбук работает как раньше —
-ячейка моста просто печатает подсказку.
+уезжают в ROS (`/joint_states`, `/goal_pose`, `/stand/cam_t`), а Trillium
+или Foxglove показывает ту же руку. Без стенда ноутбук работает как
+раньше — ячейка моста просто печатает подсказку.
 
 ### Ноутбуки без Docker
 
@@ -110,6 +121,6 @@ IK на случайных целях, геодезичность slerp, ROS-п�
   задача стенда воспроизвести математику лабораторных в индустриальном
   каркасе ROS 2, а не съёмку.
 - rviz2 внутри контейнера требует X-сервер на хосте; из коробки
-  рекомендуется Foxglove через WebSocket (браузер, без X11).
+  рекомендуется Trillium/Foxglove через WebSocket (браузер, без X11).
 - rosbridge-порт 9090 открыт только на localhost правилах `docker compose`;
   для доступа извне пробрасывайте порт осознанно.
