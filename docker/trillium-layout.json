@@ -1,0 +1,52 @@
+{
+  "configById": {
+    "3D!stand3d": {
+      "cameraState": { "distance": 3.6, "perspective": true, "phi": 55, "target": [0.15, 0.05, 0.6], "targetOffset": [0, 0, 0], "targetOrientation": [0, 0, 0, 1], "thetaOffset": 35, "fovy": 50, "near": 0.01, "far": 500 },
+      "scene": { "transforms": { "showLabel": false, "axisScale": 0.22, "lineWidth": 2 } },
+      "transforms": {},
+      "topics": {
+        "/tf": { "visible": true },
+        "/stand/arm_markers": { "visible": true },
+        "/stand/camera_frame": { "visible": false },
+        "/robot_description": { "visible": true }
+      },
+      "layers": {
+        "845139cb-26bc-40b3-8161-8ab60af4baf5": { "visible": true, "frameLocked": true, "label": "Grid", "instanceId": "845139cb-26bc-40b3-8161-8ab60af4baf5", "layerId": "foxglove.Grid", "size": 4, "divisions": 20, "lineWidth": 1, "color": "#6e8d3b", "position": [0, 0, 0], "rotation": [0, 0, 0], "order": 1 }
+      },
+      "publish": { "type": "pose", "poseTopic": "/move_base_simple/goal", "pointTopic": "/clicked_point", "poseEstimateTopic": "/initialpose", "poseEstimateXDeviation": 0.5, "poseEstimateYDeviation": 0.5, "poseEstimateThetaDeviation": 0.26179939 },
+      "followMode": "follow-pose",
+      "followTf": "world",
+      "imageMode": {}
+    },
+    "Image!standcam": {
+      "imageMode": { "imageTopic": "/stand/camera_frame", "synchronize": false, "rotation": 0, "annotations": {} },
+      "cameraState": { "distance": 20, "perspective": true, "phi": 60, "target": [0, 0, 0], "targetOffset": [0, 0, 0], "targetOrientation": [0, 0, 0, 1], "thetaOffset": 45, "fovy": 45, "near": 0.5, "far": 5000 },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": { "type": "point", "poseTopic": "/move_base_simple/goal", "pointTopic": "/clicked_point", "poseEstimateTopic": "/initialpose", "poseEstimateXDeviation": 0.5, "poseEstimateYDeviation": 0.5, "poseEstimateThetaDeviation": 0.26179939 }
+    },
+    "Plot!standplot": {
+      "paths": [
+        { "value": "/stand/ik_residual.data", "enabled": true, "timestampMethod": "receiveTime" },
+        { "value": "/stand/marker_pose_err.data", "enabled": true, "timestampMethod": "receiveTime" },
+        { "value": "/stand/stereo_depth.data", "enabled": true, "timestampMethod": "receiveTime" }
+      ],
+      "showLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "sidebarDimension": 240,
+      "foxglovePanelTitle": "Телеметрия"
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": { "speed": 1 },
+  "layout": { "first": "3D!stand3d", "second": { "first": "Image!standcam", "second": "Plot!standplot", "direction": "column", "splitPercentage": 50 }, "direction": "row", "splitPercentage": 70 }
+}

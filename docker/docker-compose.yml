@@ -1,5 +1,13 @@
 name: robot-labs-stand
 
+# Логи контейнеров ограничены: без лимита разовый потоковый лог (например,
+# ошибки конвертации больших сообщений) может занять десятки гигабайт.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 # Одновременный запуск: варианты разделяют одну docker-сеть проекта,
 # поэтому ROS_DOMAIN_ID у них разный - узлы не видят друг друга и
 # не конфликтуют за /tf и /joint_states. Порт rosbridge/моста задаётся
@@ -18,6 +26,7 @@ services:
       dockerfile: docker/Dockerfile.ros2
     environment:
       - ROS_DOMAIN_ID=53
+    logging: *default-logging
     ports:
       - "${ROSBRIDGE_PORT:-9090}:9090"
       - "${BRIDGE_PORT:-8977}:8977"
@@ -33,6 +42,7 @@ services:
       dockerfile: docker/Dockerfile.ros2
     environment:
       - ROS_DOMAIN_ID=54
+    logging: *default-logging
     ports:
       - "${ROSBRIDGE_PORT_ALT:-9190}:9090"
       - "${BRIDGE_PORT_ALT:-8177}:8977"
@@ -45,12 +55,23 @@ services:
   # Подключение внутри приложения: "Rosbridge connection" ->
   #   ws://localhost:9090  (вариант 1, стенд)
   #   ws://localhost:9190  (вариант 2, мост)
-  # Панель 3D: TF-кадры, /robot_description, /stand/camera_frame;
-  # инструмент "Publish pose" в 3D-панели публикует /goal_pose.
+  # Панель 3D: TF-кадры, /robot_description, /stand/arm_markers;
+  # инструмент "Publish pose" в 3D-панели публикует /move_base_simple/goal.
   # Образ собран под amd64: на Apple Silicon стартует через Rosetta
   # (внутри - статика на Caddy, оверхед эмуляции не заметен).
   viewer:
     image: cloudv0/trillium:latest
     platform: linux/amd64
+    logging: *default-logging
     ports:
       - "${VIEWER_PORT:-8080}:8080"
+    volumes:
+      # готовая раскладка панелей: 3D с рукой/маркерами/TF, кадр камеры,
+      # график телеметрии; Publish pose уже настроен на /move_base_simple/goal.
+      # Entrypoint образа встраивает файл в index.html один раз при создании
+      # контейнера, поэтому правку раскладки видно после
+      #   docker compose up -d --force-recreate viewer
+      # (обычный restart оставляет старую версию). Дальше раскладка лежит в
+      # localStorage браузера (ключ studio.layout): при повторном заходе
+      # берётся оттуда, сброс - localStorage.clear() + перезагрузка страницы.
+      - ./trillium-layout.json:/foxglove/default-layout.json

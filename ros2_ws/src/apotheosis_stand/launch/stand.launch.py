@@ -66,7 +66,12 @@ def generate_launch_description():
         # --- rosbridge: Trillium/Foxglove подключаются на ws://localhost:9090 ---
         # rosapi обязателен: Trillium (веб-форк Foxglove v1.87) берёт список
         # топиков сервисом /rosapi/topics_and_raw_types, данные - cbor-raw
+        # max_message_size поднят до 10 МБ: у rosbridge fragment_size по
+        # умолчанию равен max_message_size (1 МБ), а кадр камеры 1280x720x3
+        # весит ~2.8 МБ - сообщение уходит в ветку фрагментации, которая
+        # ломается на бинарных (cbor-raw) данных и сыплет ошибками в лог.
         Node(package='rosbridge_server', executable='rosbridge_websocket',
-             name='rosbridge'),
+             name='rosbridge',
+             parameters=[{'max_message_size': 10 * 1024 * 1024}]),
         Node(package='rosapi', executable='rosapi_node', name='rosapi'),
     ])

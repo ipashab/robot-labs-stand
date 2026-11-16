@@ -111,10 +111,15 @@ class MarkerTracker(Node):
 
     def publish_frame(self, obs, inl):
         img = np.full((720, 1280, 3), 24, np.uint8)
-        ix = np.clip(obs[:, 0].astype(int), 0, 1279)
-        iy = np.clip(obs[:, 1].astype(int), 0, 719)
-        img[iy, ix] = (60, 150, 255)               # все наблюдения (синий)
-        img[iy[inl], ix[inl]] = (255, 190, 70)     # инлаеры RANSAC (оранжевый)
+        ix = np.clip(obs[:, 0].astype(int), 4, 1275)
+        iy = np.clip(obs[:, 1].astype(int), 4, 715)
+        # наблюдения пятнами 11x11 px: одиночные пиксели в просмотрщике не видно
+        for dx in range(-5, 6):
+            for dy in range(-5, 6):
+                img[iy + dy, ix + dx] = (60, 150, 255)   # все наблюдения (синий)
+        for dx in range(-5, 6):
+            for dy in range(-5, 6):
+                img[iy[inl] + dy, ix[inl] + dx] = (255, 190, 70)  # инлаеры (оранж.)
         msg = Image()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = 'camera'
